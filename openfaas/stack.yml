@@ -1,0 +1,22 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  web-diglett:
+    lang: node14
+    handler: ./web-diglett
+    image: dpapamon/web-diglett:latest
+    secrets:
+      - service-username
+      - service-password
+    environment:
+      NATS_URL: nats.openfaas:4222
+  worker-diglett:
+    lang: puppeteer-node12
+    handler: ./worker-diglett
+    image: dpapamon/worker-diglett:latest
+    annotations:
+      topic: "targetUrls"
+    environment:
+      NATS_URL: nats.openfaas:4222
