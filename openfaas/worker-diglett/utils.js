@@ -1,6 +1,13 @@
 const mongoose = require('mongoose');
 const { Schema, model } = require('mongoose');
 
+const commonVideoSites = [
+  'https://www.youtube.com/watch',
+  'https://www.youtube.com/c',
+  'https://www.youtube.com/channel',
+  'https://ted.com',
+]
+
 const LinkSchema = new Schema({
   url: {
     type: String,
@@ -15,9 +22,17 @@ const LinkSchema = new Schema({
     enum: ['image', 'video'],
     required: true
   },
-})
+}, { timestamps: true })
 
 const Link = model("Link", LinkSchema);
+
+const isVideoUrl = (url) => {
+  // Identify by extensions
+  const validExtension = /\.(m4a|webm|mov|3gp|flv|mkv|mp4)$/.test(url);
+  // Identify by common video hosting 
+  const matchCommonVideoSites = commonVideoSites.some((site) => url.includes(site))
+  return validExtension || matchCommonVideoSites
+}
 
 const extractAllLinks = (page) => {
   return page.evaluate(() => {
@@ -36,13 +51,14 @@ const extractImageLinks = (page) => {
   })
 };
 
-const extractVideoLinks = (page) => {
-  return page.evaluate(() => {
+const extractVideoLinks = (page, links) => {
+  const videoSources = page.evaluate(() => {
     const srcs = Array.from(
       document.querySelectorAll("video")
     ).map((video) => video.getAttribute("src"));
     return srcs;
   });
+  return videoSources
 }
 
 const initDB = () => {
@@ -74,5 +90,6 @@ module.exports = {
   extractImageLinks,
   extractVideoLinks,
   initDB,
-  Link
+  Link,
+  isVideoUrl
 }

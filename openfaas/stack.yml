@@ -28,3 +28,13 @@ functions:
       write_timeout: 35s
       read_timeout: 35s
       exec_timeout: 35s
+  list-assets:
+    lang: node14
+    handler: ./list-assets
+    image: dpapamon/list-assets:latest
+    environment:
+      MONGO_URI: mongodb.default
+      MONGO_USER: joe
+      MONGO_PASS: tomorrownojoe
+      MONGO_DATABASE: diglett
+      MONGO_PORT: 27017
