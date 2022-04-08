@@ -37,7 +37,12 @@ module.exports = async (event, context) => {
   }
   console.log("DB options", filter, options)
   const result = await Link.paginate(filter, options)
-  const { docs } = result
+  const { docs, hasNextPage, hasPrevPage } = result
+  const response = {
+    assets: docs.map(link => LinkDTO(link)),
+    hasNextPage,
+    hasPrevPage
+  }
   return context
     .headers(
       {
@@ -46,5 +51,5 @@ module.exports = async (event, context) => {
       }
     )
     .status(200)
-    .succeed(docs.map(link => LinkDTO(link)))
+    .succeed(response)
 }
