@@ -27,7 +27,7 @@ module.exports = async (event, context) => {
   const options = {
     page,
     limit: pageSize,
-    sort: { date: sortByDirection }
+    sort: { createdAt: sortByDirection }
   }
   let filter = search
     ? { "url": { "$regex": search, "$options": "i" } }
