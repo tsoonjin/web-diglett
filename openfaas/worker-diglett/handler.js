@@ -1,9 +1,21 @@
 'use strict'
-const assert = require('assert')
 const puppeteer = require('puppeteer')
-const { extractAllLinks, extractImageLinks, extractVideoLinks } = require('./utils')
+const { Link, initDB, extractAllLinks, extractImageLinks, extractVideoLinks } = require('./utils')
 
-module.exports = async (event, context, ...args) => {
+module.exports = async (event, context) => {
+  console.log("Request", JSON.stringify(event));
+  const db = initDB()
+  if (!db) {
+    return context
+      .headers(
+        {
+          'Content-type': 'application/json',
+          "Access-Control-Allow-Origin": "*"
+        }
+      )
+      .status(500)
+      .succeed({ errorCode: 'INTERNAL_SERVER_ERROR', errorDetail: "Failed to connect to DB" })
+  }
   let browser
   let page
   
@@ -24,10 +36,18 @@ module.exports = async (event, context, ...args) => {
   console.log(`Started ${browserVersion}`)
   page = await browser.newPage()
   let uri;
-  if(event.body && event.body.uri) {
-    uri = event.body.uri
+  if(event.body) {
+    const parsedBody = typeof event.body === 'string' ? JSON.parse(event.body): event.body
+    console.log("Parsed Body", parsedBody)
+    uri = parsedBody.uri
   } else {
     return context
+      .headers(
+        {
+          'Content-type': 'application/json',
+          "Access-Control-Allow-Origin": "*"
+        }
+      )
       .status(401)
       .succeed({ errorCode: 'VALIDATION_ERROR', errorDetail: "Url not found" })
   }
@@ -43,10 +63,23 @@ module.exports = async (event, context, ...args) => {
     'imageUrls': imageUrls.status === "fulfilled" ? imageUrls.value: [],
     'videoUrls': videoUrls.status === "fulfilled" ? videoUrls.value : []
   }
+  console.log("Result", result)
+  const imageLinks = result.imageUrls.map(url => ({
+    url,
+    type: 'image',
+    parentUrl: uri
+  }))
+  await Link.insertMany(imageLinks);
 
   await browser.close()
   
   return context
+    .headers(
+      {
+        'Content-type': 'application/json',
+        "Access-Control-Allow-Origin": "*"
+      }
+    )
     .status(200)
     .succeed(result)
 }

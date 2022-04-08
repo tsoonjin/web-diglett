@@ -13,10 +13,18 @@ functions:
     environment:
       NATS_URL: nats.openfaas:4222
   worker-diglett:
-    lang: puppeteer-node12
+    lang: puppeteer-node14
     handler: ./worker-diglett
     image: dpapamon/worker-diglett:latest
     annotations:
       topic: "targetUrls"
     environment:
       NATS_URL: nats.openfaas:4222
+      MONGO_URI: mongodb.default
+      MONGO_USER: joe
+      MONGO_PASS: tomorrownojoe
+      MONGO_DATABASE: diglett
+      MONGO_PORT: 27017
+      write_timeout: 35s
+      read_timeout: 35s
+      exec_timeout: 35s

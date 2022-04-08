@@ -3,6 +3,8 @@
 ## Pre-requisites
 
 - Docker
+- [Tilt](https://docs.tilt.dev/)
+- Helm
 
 ## Cluster Setup
 
@@ -40,6 +42,7 @@ echo -n $PASSWORD | faas-cli secret create service-password
 
 - Run `kubectl port-forward svc/gateway -n openfaas 8080:8080`. Change to another port if not available i.e. 8888:8080
 - `sh scripts/openfaas-deploy.sh`
+- Run `tilt up`
 
 # Resources
 

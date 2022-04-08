@@ -3,8 +3,8 @@
 module.exports = async (event, context) => {
   let nc;
   const { isAuthenticated } = require('./utils');
-  const { connect, StringCodec } = require('nats')
-  const sc = StringCodec();
+  const { connect, JSONCodec } = require('nats')
+  const sc = JSONCodec();
   const natsUrl = process.env.NATS_URL || "localhost:4222"
   const { body } = event
   console.log("NATS URL", natsUrl);
@@ -19,7 +19,7 @@ module.exports = async (event, context) => {
   try {
     if (isAuthenticated(event)) {
       console.log("Authenticated");
-      const res = await Promise.all(body.urls.map(url => nc.publish("targetUrls", sc.encode(url))))
+      const res = await Promise.all(body.urls.map(url => nc.publish("targetUrls", sc.encode({ uri: url }))))
       await nc.drain()
       console.log("Streamed", res)
       return context
